@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20nn학년도 비공식 모의 수강신청 사이트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 폰트 및 스타일 */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            color: #333;
+            font-size: 14px;
+        }
+        /* 헤더 타이틀 */
+        .header-title {
+            color: #003366;
+            font-size: 1.25rem;
+            font-weight: bold;
+            padding: 1rem 0;
+        }
+        /* 메인 네비게이션 (파란색) */
+        .nav-main {
+            background-color: #004a99;
+            color: white;
+            border-bottom: 2px solid #003366;
+        }
+        .nav-main button {
+            padding: 1rem 1.25rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+            border-right: 1px solid #0056ad;
+        }
+        .nav-main button:hover, .nav-main button.active {
+            background-color: #003366;
+        }
+        .nav-main button:last-child {
+            border-right: none;
+        }
+        /* 서브 네비게이션 (회색) */
+        .nav-sub {
+            background-color: #4a5568;
+            color: white;
+        }
+        .nav-sub button {
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+            border-right: 1px solid #5a6578;
+        }
+        .nav-sub button:hover {
+            background-color: #2d3748;
+        }
+        .nav-sub button:last-child {
+            border-right: none;
+        }
+        /* 메인 컨텐츠 영역 */
+        .content-section {
+            background-color: white;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-top: 1rem;
+        }
+        .list-dot {
+            list-style: none;
+            padding-left: 0;
+        }
+        .list-dot li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .list-dot li::before {
+            content: '●';
+            color: #004a99;
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 0.8em;
+        }
+        
+        /* 로딩 모달 스타일 */
+        #loading-modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 수강신청 테이블 스타일 */
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.8rem; /* 13px */
+        }
+        .course-table th, .course-table td {
+            border: 1px solid #cbd5e1;
+            padding: 0.6rem 0.5rem;
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap; /* 줄바꿈 방지 */
+        }
+        .course-table th {
+            background-color: #e5e7eb;
+            color: #334155;
+            font-weight: 500;
+        }
+        .course-table td {
+            color: #1e293b;
+        }
+        .course-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        /* 신청 버튼 */
+        .apply-btn {
+            background-color: #3b82f6;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: background-color 0.2s;
+        }
+        .apply-btn:hover {
+            background-color: #2563eb;
+        }
+        
+        /* 사이드바 스타일 */
+        .sidebar-section {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .sidebar-title {
+            font-weight: bold;
+            color: #004a99;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .sidebar-table {
+            width: 100%;
+            font-size: 0.8rem; /* 13px */
+        }
+        .sidebar-table td {
+            padding: 0.3rem 0.2rem;
+        }
+        .sidebar-table tr td:first-child {
+            color: #4b5563;
+            width: 60%;
+        }
+        .sidebar-table tr td:last-child {
+            color: #1f2937;
+            font-weight: 500;
+            text-align: right;
+        }
+        .timetable {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 0.75rem;
+            table-layout: fixed;
+        }
+        .timetable th, .timetable td {
+            border: 1px solid #e5e7eb;
+            height: 20px;
+            text-align: center;
+        }
+        .timetable th {
+            background-color: #f3f4f6;
+            font-weight: 500;
+        }
+        .timetable .time-col {
+            background-color: #f4f6f9;
+            font-weight: 500;
+            width: 20px;
+        }
+        /* 페이지네이션 스타일 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .pagination button {
+            color: #004a99;
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            padding: 0.25rem 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background-color: #004a99;
+            color: white;
+            border-color: #004a99;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <div id="loading-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-12 rounded-lg shadow-xl text-center max-w-md w-full border border-gray-300"> <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-20 w-20 mx-auto mb-4"></div>
+            <h2 class="text-xl font-bold mb-2">Loading...</h2>
+            <p class="text-gray-700">처리중입니다......</p>
+            <p class="text-gray-700">잠시만 기다려주세요.</p>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-sm">
+        <div class="container mx-auto max-w-screen-xl p-4 flex justify-between items-center"> <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-blue-800">20nn학년도 비공식 모의 수강신청 사이트</h1>
+            </div>
+            <div class="text-right text-sm text-gray-600">
+                <p>
+                    <span class="font-bold">12341234</span>
+                    <span class="font-bold mx-1">홍길동</span>
+                    <span>(XXXX학과/100학년)</span>
+                </p>
+                <p>
+                    <span class_font-bold">365학기</span> 2025.25.25 25:25 접속
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-screen-2xl p-4"> <nav class="nav-main flex justify-between items-center shadow-md">
+            <div class="flex">
+                <button id="gongji-btn" class="active">공지사항</button>
+                <button id="gangui-btn">강의시간표</button>
+                <button id="sugang-btn">수강신청</button>
+                <button>수강확정/대기내역</button>
+                <button>학점이수현황</button>
+                <button>재수강신청</button>
+                <button>재수강내역</button>
+                <button>수강신청편람</button>
+                <button>매뉴얼</button>
+            </div>
+            <div class="flex">
+                <button>로그아웃</button>
+            </div>
+        </nav>
+
+        <nav id="nav-sub" class="nav-sub flex shadow">
+            <button>공지사항</button>
+            <button>교육과정</button>
+            <button>교과목해설집</button>
+            <button>학사일정</button>
+        </nav>
+
+        <main id="main-content" class="content-section">
+            
+            <div id="gongji-content">
+                <ul class="list-dot space-y-2">
+                    <li>비공식 사이트입니다. 장바구니 연습 및 재미로만 봐주세요.</li>
+                    <li>본 사이트는 어떠한 개인정보도 수집하지 않습니다.</li>
+                    <li>로딩 시간은 3초 ~ 9초 사이의 랜덤한 시간을 로딩</li>
+                    <li>수강신청 후 마지막 선택하고 몇초가 나왔는지 확인해보세요</li>
+                    <li>4초 이내로 끝내면 성공이라고 생각합니다.</li>
+                    <li>★꿀팁★ 팝업이 뜨면 엔터를 누르면 빠르게 할 수 있습니다.</li>
+                    <li>오류 발생 시 새로고침</li>
+                </ul>
+            </div>
+
+            <div id="sugang-content" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6"> <div class="lg:col-span-3 space-y-6"> <div class="flex items-center space-x-6 bg-gray-50 p-4 rounded-md border border-gray-200">
+                            <span class="font-bold text-gray-700">과목유형</span>
+                            <div class="flex items-center space-x-4">
+                                <label class="flex items-center"><input type="radio" name="courseType" value="baguni" class="mr-1"> 장바구니</label>
+                                <label class="flex items-center"><input type="radio" name="courseType" value="gyoyang" class="mr-1" disabled> 교양</label>
+                                <label class="flex items-center"><input type="radio" name="courseType" value="jeongong" class="mr-1" disabled> 전공</label>
+                                <label class="flex items-center"><input type="radio" name="courseType" value="micro" class="mr-1" disabled> 마이크로디그리</label>
+                            </div>
+                        </div>
+
+                        
+                        <div id="course-table-container"> <h3 class="text-lg font-bold text-blue-800 mb-2">▶ 개설강좌</h3>
+                            <div class="overflow-x-auto border border-gray-200 rounded-md">
+                                <table class="course-table">
+                                    <thead class="bg-gray-200">
+                                        <tr>
+                                            <th>신청</th>
+                                            <th>이수구분</th>
+                                            <th>과목번호</th>
+                                            <th>과목명</th>
+                                            <th>학점/시간</th>
+                                            <th>담당교수</th>
+                                            <th>강의실(시간)</th>
+                                            <th>구분</th>
+                                            <th>원격<br>여부</th>
+                                            <th>전공상호<br>인정과목</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="course-list">
+                                        <tr id="course-list-placeholder-row-1">
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr id="course-list-placeholder-row-2">
+                                            <td colspan="10" class="text-center text-gray-500 py-16" id="course-list-placeholder-text"> 과목유형을 선택하세요.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="pagination">
+                                <button class="active">1</button>
+                            </div>
+                        </div>
+
+                        <div id="sugang-confirm-table">
+                             <h3 class="text-lg font-bold text-blue-800 mb-2">▶ 수강확정내역</h3>
+                             <div class="flex justify-between items-center mb-2">
+                                 <button class="bg-white border border-gray-300 px-3 py-1 rounded-md text-sm hover:bg-gray-50">수강신청서인쇄</button>
+                                 <span id="confirm-stats" class="text-sm text-gray-600">신청학점: 0 학점 / 신청과목수: 0 개</span>
+                             </div>
+                             <div class="overflow-x-auto border border-gray-200 rounded-md">
+                                 <table class="course-table">
+                                     <thead class="bg-gray-200">
+                                         <tr>
+                                             <th>삭제</th>
+                                             <th>이수구분</th>
+                                             <th>과목번호</th>
+                                             <th>과목명</th>
+                                             <th>학점/시간</th>
+                                             <th>담당교수</th>
+                                             <th>강의실(시간)</th>
+                                             <th>재강<br>여부</th>
+                                         </tr>
+                                     </thead>
+                                     <tbody id="confirm-list">
+                                         <tr>
+                                             <td colspan="8" class="text-center text-gray-500 py-6" id="confirm-placeholder">
+                                                 해당자료가 없습니다.
+                                             </td>
+                                         </tr>
+                                     </tbody>
+                                 </table>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="sidebar-section">
+                            <h4 class="sidebar-title">엄청빠른신청</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center text-sm">
+                                    <span class="w-20 inline-block">미구현!</span>
+                                    <input type="text" class="border border-gray-300 rounded px-2 py-1 w-24 text-sm">
+                                    <button id="quick-apply-btn" class="bg-amber-600 text-white px-3 py-1 rounded text-sm ml-2 hover:bg-amber-700">신청</button>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <h4 class="sidebar-title">직전학기 신청학점</h4>
+                            <table class="sidebar-table">
+                                <tbody>
+                                    <tr>
+                                        <td>직전학기 신청학점</td>
+                                        <td>10.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>직전학기 평균평점</td>
+                                        <td>(희망사항) 4.50</td>
+                                    </tr>
+                                    <tr>
+                                        <td>총 취득학점</td>
+                                        <td>10.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>신청가능학점</td>
+                                        <td>20.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <h4 class="sidebar-title">시간표 현황</h4>
+                            <div class="text-xs text-right mb-2 space-x-2">
+                                <span><span class="inline-block w-3 h-3 bg-blue-100 border border-blue-300 mr-1 align-middle"></span> 조회</span>
+                                <span><span class="inline-block w-3 h-3 bg-gray-100 border border-gray-400 mr-1 align-middle"></span> 완료</span>
+                                <span><span class="inline-block w-3 h-3 bg-red-100 border border-red-400 mr-1 align-middle"></span> 중복</span>
+                                <span><span class="inline-block w-3 h-3 bg-green-100 border border-green-400 mr-1 align-middle"></span> 대기</span>
+                            </div>
+                            <table class="timetable">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>월</th>
+                                        <th>화</th>
+                                        <th>수</th>
+                                        <th>목</th>
+                                        <th>금</th>
+                                        <th>토</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="timetable-body">
+                                    <script>
+                                        for (let i = 1; i <= 15; i++) {
+                                            document.write('<tr><td class="time-col">' + i + '</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
+                                        }
+                                    </script>
+                                </tbody>
+                            </table>
+                            <ul class="text-xs text-red-600 mt-2 list-disc list-inside">
+                                <li>안녕하세요</li>
+                                <li>수강신청 파이팅!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gongjiBtn = document.getElementById('gongji-btn');
+            const sugangBtn = document.getElementById('sugang-btn');
+            const gongjiContent = document.getElementById('gongji-content');
+            const sugangContent = document.getElementById('sugang-content');
+            const navSub = document.getElementById('nav-sub');
+
+            const loadingModal = document.getElementById('loading-modal');
+            const baguniRadio = document.querySelector('input[name="courseType"][value="baguni"]');
+            
+            const courseList = document.getElementById('course-list');
+            const timetableBody = document.getElementById('timetable-body');
+            
+            const courseTypeRadios = document.querySelectorAll('input[name="courseType"]');
+
+            let startTime = 0;
+            let timerStarted = false;
+            let totalExcludedTime = 0;
+            let loadingStartTime = 0;
+            const totalCourseCount = 7;
+
+            gongjiBtn.addEventListener('click', function() {
+                gongjiContent.classList.remove('hidden');
+                sugangContent.classList.add('hidden');
+                navSub.classList.remove('hidden');
+
+                gongjiBtn.classList.add('active');
+                sugangBtn.classList.remove('active');
+            });
+
+            sugangBtn.addEventListener('click', function() {
+                gongjiContent.classList.add('hidden');
+                sugangContent.classList.remove('hidden');
+                navSub.classList.add('hidden');
+
+                gongjiBtn.classList.remove('active');
+                sugangBtn.classList.add('active');
+
+                if (!timerStarted) {
+                    alert('수강신청 탭에 처음 접속했습니다. 지금부터 7개 과목 신청 완료까지 시간을 측정합니다.\n다시 하려면 새로고침');
+                    startTime = performance.now();
+                    timerStarted = true;
+                    totalExcludedTime = 0;
+                    loadingStartTime = 0;
+                    console.log('Timer started');
+                }
+            });
+
+            function populateCourseList() {
+                const coursesHTML = `
+                <tr>
+                    <td><button class="apply-btn" data-name="재밌는과목" data-code="10001-001">신청</button></td>
+                    <td>자율교양</td>
+                    <td>10001-001</td>
+                    <td>재밌는과목</td>
+                    <td>1/1</td>
+                    <td>김재미</td>
+                    <td>사이버강좌(월1)</td>
+                    <td></td>
+                    <td>Y</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><button class="apply-btn" data-name="신나는과목" data-code="10002-001">신청</button></td>
+                    <td>야간자율학습</td>
+                    <td>10002-001</td>
+                    <td>신나는과목</td>
+                    <td>1/1</td>
+                    <td>김신나</td>
+                    <td>사이비강좌(화1)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><button class="apply-btn" data-name="과목1" data-code="10003-001">신청</button></td>
+                    <td>선택선택</td>
+                    <td>10003-001</td>
+                    <td>과목1</td>
+                    <td>1/1</td>
+                    <td>김김김</td>
+                    <td>집101(수1)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><button class="apply-btn" data-name="과목2" data-code="10004-001">신청</button></td>
+                    <td>전공아님</td>
+                    <td>10004-001</td>
+                    <td>과목학개론</td>
+                    <td>1/1</td>
+                    <td>김과목</td>
+                    <td>바구니102(목1)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><button class="apply-btn" data-name="과목설계" data-code="10005-001">신청</button></td>
+                    <td>전선공택</td>
+                    <td>10005-001</td>
+                    <td>과목설계</td>
+                    <td>1/1</td>
+                    <td>과목의신</td>
+                    <td>피시방103(금1)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><button class="apply-btn" data-name="고양이쓰다듬기(캡스톤디자인)" data-code="10006-001">신청</button></td>
+                    <td>점심시간</td>
+                    <td>10006-001</td>
+                    <td>고양이쓰다듬기(캡스톤디자인)</td>
+                    <td>1/1</td>
+                    <td>냥냥이</td>
+                    <td>침대101(토1)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><button class="apply-btn" data-name="이상한과목" data-code="10007-001">신청</button></td>
+                    <td>필수</td>
+                    <td>10007-001</td>
+                    <td>이상한과목</td>
+                    <td>1/1</td>
+                    <td>엘리스</td>
+                    <td>이세계(월3)</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                `;
+                courseList.innerHTML = coursesHTML;
+            }
+
+            function setCourseListPlaceholder(text) {
+                courseList.innerHTML = `
+                <tr id="course-list-placeholder-row-1">
+                    <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                    <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                </tr>
+                <tr id="course-list-placeholder-row-2">
+                    <td colspan="10" class="text-center text-gray-500 py-16" id="course-list-placeholder-text">
+                        ${text}
+                    </td>
+                </tr>
+                `;
+            }
+
+            baguniRadio.addEventListener('click', function() {
+                if (baguniRadio.checked) {
+                    loadingModal.classList.remove('hidden');
+                    
+                    if (timerStarted) {
+                        loadingStartTime = performance.now();
+                    }
+                    
+                    const randomDelay = Math.floor(Math.random() * 6001) + 3000; 
+
+                    setTimeout(function() {
+                        loadingModal.classList.add('hidden');
+                        
+                        if (timerStarted && loadingStartTime > 0) {
+                            const loadingDuration = performance.now() - loadingStartTime;
+                            totalExcludedTime += loadingDuration;
+                            loadingStartTime = 0;
+                            console.log(`(장바구니 로딩) 제외된 시간: ${loadingDuration}ms / 총 제외시간: ${totalExcludedTime}ms`);
+                        }
+                        
+                        populateCourseList();
+                    }, randomDelay);
+                }
+            });
+
+            courseTypeRadios.forEach(radio => {
+                if (radio.value !== 'baguni') {
+                    radio.addEventListener('click', function() {
+                        setCourseListPlaceholder(`${radio.labels[0].textContent.trim()} 목록이 표시됩니다. (구현 필요)`);
+                    });
+                }
+            });
+
+            function updateTimetable(courseCode) {
+                const style = 'bg-blue-100';
+                const borderStyle = 'border-blue-300'; 
+
+                const row1 = timetableBody.rows[0];
+                const row2 = timetableBody.rows[1];
+                const row3 = timetableBody.rows[2];
+
+                const MON = 1, TUE = 2, WED = 3, THU = 4, FRI = 5, SAT = 6;
+                let cellToUpdate;
+
+                switch (courseCode) {
+                    case '10001-001': cellToUpdate = row1.cells[MON]; break;
+                    case '10002-001': cellToUpdate = row1.cells[TUE]; break;
+                    case '10003-001': cellToUpdate = row1.cells[WED]; break;
+                    case '10004-001': cellToUpdate = row1.cells[THU]; break;
+                    case '10005-001': cellToUpdate = row1.cells[FRI]; break;
+                    case '10006-001': cellToUpdate = row1.cells[SAT]; break;
+                    case '10007-001': cellToUpdate = row3.cells[MON]; break;
+                }
+
+                if (cellToUpdate) {
+                    cellToUpdate.classList.add(style);
+                    cellToUpdate.classList.add(borderStyle);
+                }
+            }
+
+            function updateConfirmStats() {
+                const confirmList = document.getElementById('confirm-list');
+                const rows = confirmList.getElementsByTagName('tr');
+                const statsSpan = document.getElementById('confirm-stats');
+                
+                let totalCredits = 0;
+                let totalCourses = 0;
+
+                const placeholder = document.getElementById('confirm-placeholder');
+                if (placeholder && rows.length === 1) {
+                    totalCourses = 0;
+                    totalCredits = 0;
+                } else {
+                    totalCourses = rows.length;
+                    for (const row of rows) {
+                        try {
+                            const creditString = row.cells[4].textContent; 
+                            const credits = parseFloat(creditString.split('/')[0]); 
+                            if (!isNaN(credits)) {
+                                totalCredits += credits;
+                            }
+                        } catch (e) {
+                            console.error("학점 계산 중 오류", e);
+                        }
+                    }
+                }
+                statsSpan.textContent = `신청학점: ${totalCredits.toFixed(2)} 학점 / 신청과목수: ${totalCourses} 개`;
+            }
+
+            const appliedCourses = new Set();
+
+            function handleApplyClick(buttonElement) {
+                buttonElement.blur(); 
+
+                const courseCode = buttonElement.dataset.code;
+                const courseName = buttonElement.dataset.name;
+
+                if (appliedCourses.has(courseCode)) {
+                    alert(`${courseName} 과목은 이미 신청되었습니다.`);
+                    return;
+                }
+
+                const confirmApply = confirm(`${courseName} 과목을 신청하시겠습니까?`);
+                if (!confirmApply) return;
+
+                loadingModal.classList.remove('hidden');
+
+                if (timerStarted) {
+                    loadingStartTime = performance.now();
+                }
+
+                const randomDelay = Math.floor(Math.random() * 6001) + 3000;
+
+                setTimeout(function() {
+                    loadingModal.classList.add('hidden');
+
+                    if (timerStarted && loadingStartTime > 0) {
+                        const loadingDuration = performance.now() - loadingStartTime;
+                        totalExcludedTime += loadingDuration;
+                        loadingStartTime = 0;
+                        console.log(`(신청 로딩) 제외된 시간: ${loadingDuration}ms / 총 제외시간: ${totalExcludedTime}ms`);
+                    }
+
+                    appliedCourses.add(courseCode);
+                    updateTimetable(courseCode);
+
+                    const confirmList = document.getElementById('confirm-list');
+                    const confirmPlaceholder = document.getElementById('confirm-placeholder');
+                    
+                    if (confirmPlaceholder) {
+                        confirmPlaceholder.closest('tr').remove(); 
+                    }
+
+                    const row = buttonElement.closest('tr');
+                    const cells = row.querySelectorAll('td');
+
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td><button class="apply-btn bg-red-500 hover:bg-red-600">삭제</button></td>
+                        <td>${cells[1].textContent}</td>
+                        <td>${cells[2].textContent}</td>
+                        <td>${cells[3].textContent}</td>
+                        <td>${cells[4].textContent}</td>
+                        <td>${cells[5].textContent}</td>
+                        <td>${cells[6].textContent}</td>
+                        <td></td>
+                    `;
+                    confirmList.appendChild(newRow);
+
+                    newRow.querySelector("button").addEventListener("click", () => {
+                        appliedCourses.delete(courseCode);
+                        newRow.remove();
+                        updateConfirmStats();
+                        
+                        if (confirmList.getElementsByTagName('tr').length === 0) {
+                            confirmList.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500 py-6" id="confirm-placeholder">해당자료가 없습니다.</td></tr>`;
+                        }
+                    });
+
+                    updateConfirmStats();
+
+                    const confirmedCount = confirmList.getElementsByTagName('tr').length;
+                    let finalAlertShown = false;
+
+                    if (timerStarted && confirmedCount === totalCourseCount) {
+                        const endTime = performance.now();
+                        const totalElapsedTime = endTime - startTime;
+                        const netTime = totalElapsedTime - totalExcludedTime;
+                        
+                        const netTimeInSeconds = (netTime / 1000).toFixed(2);
+
+                        alert(`🎉 모든 과목 신청 완료! 🎉\n\n총 소요 시간 (로딩 제외): ${netTimeInSeconds} 초\n 새로고침 후 다시 시작!`);
+                        
+                        timerStarted = false;
+                        startTime = 0;
+                        totalExcludedTime = 0;
+                        finalAlertShown = true;
+                    }
+
+                    if (!finalAlertShown) {
+                        alert("수강신청이 확정되었습니다.");
+                    }
+                    
+                    console.log(`신청 처리 완료 (시뮬레이션): ${courseCode}`);
+                }, randomDelay);
+            }
+
+            courseList.addEventListener('click', function(event) {
+                if (event.target.classList.contains('apply-btn')) {
+                    handleApplyClick(event.target);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
